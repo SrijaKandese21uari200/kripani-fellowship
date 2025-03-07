@@ -1,16 +1,20 @@
+require('dotenv').config(); // Load environment variables
 const express = require('express');
 const mongoose = require('mongoose');
 const multer = require('multer');
 const cors = require('cors');
 const path = require('path');
-const fs = require('fs'); // Required for file handling
+const fs = require('fs');
+const morgan = require('morgan'); // For logging requests
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/kripani_fellowship';
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(morgan('dev')); // Log requests
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Ensure the uploads directory exists
@@ -20,21 +24,24 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 // Connect to MongoDB
-mongoose.connect('mongodb://127.0.0.1:27017/kripani_fellowship', {
+mongoose.connect(MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-}).then(() => console.log('MongoDB connected'))
-  .catch(err => console.log(err));
+}).then(() => console.log('✅ MongoDB Connected'))
+  .catch(err => {
+      console.error('❌ MongoDB Connection Error:', err);
+      process.exit(1);
+  });
 
 // Define Mongoose Schema
 const applicationSchema = new mongoose.Schema({
-    full_name: String,
-    email: String,
-    mobile: String,
-    degree: String,
-    college: String,
+    full_name: { type: String, required: true },
+    email: { type: String, required: true },
+    mobile: { type: String, required: true },
+    degree: { type: String, required: true },
+    college: { type: String, required: true },
     video_assessment: String,
-    resume: String // Stores file path
+    resume: { type: String, required: true } // Stores file path
 });
 
 const Application = mongoose.model('Application', applicationSchema);
@@ -42,26 +49,26 @@ const Application = mongoose.model('Application', applicationSchema);
 // Multer Storage Configuration
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        console.log("Saving file to uploads folder...");
         cb(null, 'uploads/'); // Ensure this folder exists
     },
     filename: function (req, file, cb) {
-        console.log("Received file:", file.originalname);
         cb(null, Date.now() + '-' + file.originalname);
     }
 });
 
+// File Upload Middleware with Size & Type Restrictions
 const upload = multer({ 
     storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB file size limit
     fileFilter: (req, file, cb) => {
-        // Allow only PDFs and Word files
-        const fileTypes = /pdf|doc|docx/;
-        const extName = fileTypes.test(path.extname(file.originalname).toLowerCase());
-        const mimeType = fileTypes.test(file.mimetype);
+        const allowedTypes = /pdf|doc|docx/;
+        const extName = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+        const mimeType = allowedTypes.test(file.mimetype);
+
         if (extName && mimeType) {
             return cb(null, true);
         } else {
-            return cb(new Error("Only .pdf, .doc, and .docx files are allowed!"));
+            return cb(new Error("❌ Only .pdf, .doc, and .docx files are allowed!"));
         }
     }
 });
@@ -70,10 +77,8 @@ const upload = multer({
 app.post('/apply', upload.single('resume'), async (req, res) => {
     try {
         if (!req.file) {
-            return res.status(400).json({ message: 'Resume file is required!' });
+            return res.status(400).json({ success: false, message: '❌ Resume file is required!' });
         }
-
-        console.log("File saved at:", req.file.path);
 
         const application = new Application({
             full_name: req.body.full_name,
@@ -86,14 +91,20 @@ app.post('/apply', upload.single('resume'), async (req, res) => {
         });
 
         await application.save();
-        res.json({ message: 'Application submitted successfully!' });
+        res.json({ success: true, message: '✅ Application submitted successfully!' });
+
     } catch (error) {
-        console.error("Error:", error);
-        res.status(500).json({ message: 'Error submitting application', error });
+        console.error("❌ Error submitting application:", error);
+        res.status(500).json({ success: false, message: '❌ Error submitting application', error: error.message });
     }
+});
+
+// Test API
+app.get('/', (req, res) => {
+    res.json({ message: "🚀 Kripani Fellowship API is Running!" });
 });
 
 // Start Server
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
