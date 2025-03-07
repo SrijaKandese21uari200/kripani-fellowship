@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apply - Kripani Fellowship</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    
+    <header>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="apply.html">Apply</a></li>
+                <li><a href="faq.html">FAQs</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </nav>
+        <h1>Apply for Kripani Research Fellowship</h1>
+    </header>
+
+    <form id="applicationForm">
+        <label for="full_name">Full Name:</label>
+        <input type="text" id="full_name" name="full_name" required>
+
+        <label for="email">Email Address:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="mobile">Mobile Number:</label>
+        <input type="tel" id="mobile" name="mobile" required>
+
+        <label for="degree">Degree:</label>
+        <input type="text" id="degree" name="degree" required>
+
+        <label for="college">College/University:</label>
+        <input type="text" id="college" name="college" required>
+
+        <label for="video_assessment">Video Assessment (Google Drive Link):</label>
+        <input type="url" id="video_assessment" name="video_assessment" required>
+
+        <label for="resume">Upload Resume (PDF/Word, < 10MB):</label>
+        <input type="file" id="resume" name="resume" accept=".pdf,.doc,.docx" required>
+
+        <button type="submit">Submit Application</button>
+    </form>
+
+    <footer>
+        <p>&copy; 2025 Kripani Research Fellowship | Anvi Robotics</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
