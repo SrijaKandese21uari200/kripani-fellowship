@@ -8,8 +8,9 @@ const fs = require('fs');
 const morgan = require('morgan'); // For logging requests
 
 const app = express();
-const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/kripani_fellowship';
+const PORT = process.env.PORT || 8080;
+
+const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://SrijaKande:Srija2004@cluster0.mongodb.net/kripani_fellowship?retryWrites=true&w=majority';
 
 // Middleware
 app.use(cors());
@@ -101,7 +102,7 @@ app.get('/', (req, res) => {
     res.json({ message: "🚀 Kripani Fellowship API is Running!" });
 });
 
-// Start Server
+// ✅ Start Server (Only Once!)
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
